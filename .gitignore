@@ -1,0 +1,41 @@
+.env
+
+# IDE and editor files
+.cursor/
+*.swp
+*.swo
+.idea/
+
+# Python virtual environments
+.venv/
+venv/
+env/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Test coverage
+.coverage
+htmlcov/
+coverage.xml
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# ChromaDB data
+chroma_data/
+
+# Local development
+.DS_Store
+*.bak
+*.tmp

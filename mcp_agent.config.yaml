@@ -1,0 +1,15 @@
+execution_engine: asyncio
+logger:
+  type: console
+  level: debug
+
+mcp:
+  servers:
+    docanalysis:
+      command: "uv"
+      args: ["run", "src/docanalysis/server.py"]
+      description: "Document analysis and summarization server"
+
+anthropic:
+  # Secrets (API keys, etc.) are stored in mcp_agent.secrets.yaml
+  default_model: claude-3-sonnet-20240229 
