@@ -1,4 +1,6 @@
+# Environment variables and secrets
 .env
+.env.test
 
 # IDE and editor files
 .cursor/
@@ -34,6 +36,8 @@ coverage.xml
 
 # ChromaDB data
 chroma_data/
+:memory:
+chroma.log
 
 # Local development
 .DS_Store

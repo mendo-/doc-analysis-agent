@@ -2,7 +2,45 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug Current Test",
+            "name": "Run All Tests",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "tests/unit/",
+                "-v",
+                "-s"
+            ],
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src",
+                "DOTENV_PATH": "${workspaceFolder}/.env"
+            },
+            "envFile": "${workspaceFolder}/.env",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "justMyCode": false
+        },
+        {
+            "name": "Run All Integration Tests",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "tests/integration/",
+                "-v",
+                "-s"
+            ],
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src",
+                "DOTENV_PATH": "${workspaceFolder}/.env"
+            },
+            "envFile": "${workspaceFolder}/.env",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "justMyCode": false
+        },
+        {
+            "name": "Debug Current File",
             "type": "python",
             "request": "launch",
             "purpose": ["debug-test"],
@@ -14,8 +52,10 @@
             ],
             "console": "integratedTerminal",
             "env": {
-                "PYTHONPATH": "${workspaceFolder}/src"
+                "PYTHONPATH": "${workspaceFolder}/src",
+                "DOTENV_PATH": "${workspaceFolder}/.env"
             },
+            "envFile": "${workspaceFolder}/.env",
             "python": "${workspaceFolder}/.venv/bin/python",
             "justMyCode": false
         },
@@ -32,8 +72,10 @@
             ],
             "console": "integratedTerminal",
             "env": {
-                "PYTHONPATH": "${workspaceFolder}/src"
+                "PYTHONPATH": "${workspaceFolder}/src",
+                "DOTENV_PATH": "${workspaceFolder}/.env"
             },
+            "envFile": "${workspaceFolder}/.env",
             "python": "${workspaceFolder}/.venv/bin/python",
             "justMyCode": false
         }

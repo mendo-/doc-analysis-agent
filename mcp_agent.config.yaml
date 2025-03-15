@@ -9,7 +9,108 @@ mcp:
       command: "uv"
       args: ["run", "src/docanalysis/server.py"]
       description: "Document analysis and summarization server"
+    fetch:
+      command: "uvx"
+      args: ["mcp-server-fetch"]
+      description: "Data retrieval server"
+    filesystem:
+      command: "npx"
+      args:
+        [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/Users/work/Workspaces/doc-analysis-agent"
+        ]
+      description: "File system operations server"
 
 anthropic:
   # Secrets (API keys, etc.) are stored in mcp_agent.secrets.yaml
-  default_model: claude-3-sonnet-20240229 
+  default_model: claude-3-sonnet-20240229
+
+name: docanalysis_server
+description: Document analysis and relationship tracking using MCP and Claude
+
+agents:
+  doc_analyzer:
+    description: Expert document analyzer for contracts, amendments, and reports
+    tools:
+      - analyze_document
+      - summarize_document
+      - extract_info
+      - analyze_documents
+
+tools:
+  analyze_document:
+    description: Analyze a single document to extract key information, entities, and metadata
+    parameters:
+      doc_content:
+        type: string
+        description: The content of the document to analyze
+      metadata:
+        type: object
+        description: Optional metadata about the document (type, title, date, etc.)
+        required: false
+
+  summarize_document:
+    description: Generate a summary of a document at different detail levels
+    parameters:
+      doc_content:
+        type: string
+        description: The content of the document to summarize
+      detail_level:
+        type: string
+        description: Level of detail for the summary (brief, standard, detailed)
+        default: standard
+      metadata:
+        type: object
+        description: Optional metadata about the document
+        required: false
+
+  extract_info:
+    description: Extract specific types of information from a document
+    parameters:
+      doc_content:
+        type: string
+        description: The content of the document to analyze
+      info_types:
+        type: array
+        items:
+          type: string
+        description: List of information types to extract (e.g., parties, financial_terms, dates)
+      metadata:
+        type: object
+        description: Optional metadata about the document
+        required: false
+
+  analyze_documents:
+    description: Analyze multiple documents and their relationships
+    parameters:
+      documents:
+        type: array
+        items:
+          type: object
+          properties:
+            content:
+              type: string
+            metadata:
+              type: object
+        description: List of documents to analyze together
+
+prompts:
+  analyze_document:
+    template: |
+      Analyze the following document and extract key information.
+      Document Content: {{content}}
+      Document Type: {{type}}
+      Key Fields to Extract: {{fields}}
+
+  summarize_document:
+    template: |
+      Generate a {{detail_level}} summary of the following document.
+      Document Content: {{content}}
+
+  extract_info:
+    template: |
+      Extract the following types of information from the document:
+      Document Content: {{content}}
+      Information types to extract: {{info_types}} 

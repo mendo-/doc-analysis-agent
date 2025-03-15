@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  chromadb:
+    image: chromadb/chroma:0.6.3
+    environment:
+      - ALLOW_RESET=true
+      - CHROMA_SERVER_AUTH_CREDENTIALS_FILE=/auth/auth.json
+      - CHROMA_SERVER_AUTH_PROVIDER=basic
+    volumes:
+      - chroma_data:/chroma/chroma
+      - ./config/auth:/auth
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  doc-analysis:
+    build:
+      context: .
+    volumes:
+      - .:/app
+      - ./data:/app/data
+    environment:
+      - CHROMADB_HOST=chromadb
+      - CHROMADB_PORT=8000
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - CHROMADB_AUTH_CREDENTIALS=admin:admin
+    depends_on:
+      - chromadb
+    ports:
+      - "8080:8080"
+
+volumes:
+  chroma_data:
+    driver: local 
