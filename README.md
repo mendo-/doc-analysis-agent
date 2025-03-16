@@ -1,142 +1,130 @@
 # Document Analysis Agent
 
-A powerful document analysis system built on the Model Context Protocol (MCP) that uses Claude to analyze, summarize, and understand relationships between various types of documents, with a special focus on contracts, amendments, and technical reports.
+A powerful document analysis system built on the Model Context Protocol (MCP) that provides advanced document processing, analysis, and information extraction capabilities using Claude 3 Opus.
 
-## Overview
+## Features
 
-This project provides an intelligent document analysis system that can:
+- 📄 Document Analysis: Extract key information, entities, dates, and monetary values
+- 📊 Document Summarization: Generate summaries at different detail levels
+- 🔍 Entity Search: Find documents mentioning specific entities
+- 📁 Batch Processing: Process multiple documents efficiently
+- 🤖 AI-Powered: Leverages Claude 3 Opus for intelligent analysis
+- 🔄 MCP Integration: Built on the Model Context Protocol for standardized communication
 
-- Extract key information from documents
-- Generate summaries at different detail levels
-- Identify and track relationships between related documents
-- Analyze specific document types (contracts, amendments, reports)
-- Handle complex document structures and relationships
+## Prerequisites
 
-### Key Features
-
-- **Smart Document Analysis**: Extracts entities, dates, monetary values, and key information
-- **Multi-level Summarization**: Generate brief, standard, or detailed summaries
-- **Document Relationship Tracking**: Automatically identifies and tracks relationships between documents
-- **Type-specific Analysis**: Specialized handling for different document types
-- **Error Handling**: Robust error handling and fallback mechanisms
-- **Integration & Unit Tests**: Comprehensive test suite with both mock and real LLM testing
+- Python 3.11 or higher
+- [uv](https://github.com/astral-sh/uv) for dependency management
+- Anthropic API key for Claude 3 access
 
 ## Installation
 
 1. Clone the repository:
-
 ```bash
 git clone https://github.com/yourusername/doc-analysis-agent.git
 cd doc-analysis-agent
 ```
 
-2. Install uv (if not already installed):
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-3. Create and activate a virtual environment:
-
+2. Create a virtual environment and install dependencies using uv:
 ```bash
 uv venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-```
-
-4. Install dependencies:
-
-```bash
+source .venv/bin/activate  # On Unix/macOS
 uv pip install -e .
 ```
 
-4. Set up your environment:
-
+3. Set up your environment variables:
 ```bash
 cp .env.example .env
-# Edit .env and add your ANTHROPIC_API_KEY
+```
+
+Edit `.env` and add your Anthropic API key:
+```
+ANTHROPIC_API_KEY=your-api-key-here
 ```
 
 ## Usage
 
-### Basic Usage
+The Document Analysis Agent provides several ways to process and analyze documents. Here are some common use cases:
+
+### Basic Document Analysis
 
 ```python
-from docanalysis.server import DocumentAnalysisAgent
-from docanalysis.core.types import Document
+from docanalysis.mcp.server import FastMCPDocumentAnalysisServer
 
-# Initialize the agent
-agent = DocumentAnalysisAgent()
-await agent.initialize()
+# Initialize the server
+server = FastMCPDocumentAnalysisServer()
+await server.initialize()
 
 # Analyze a document
-doc = Document(
-    content="Your document content here",
-    metadata={
+result = await server.analyze_document({
+    "content": "Your document content here",
+    "metadata": {
         "type": "contract",
-        "title": "Service Agreement",
-        "date": "2024-03-14",
-        "id": "DOC-001"
+        "title": "Sample Document"
     }
-)
-
-# Get analysis
-result = await agent.analyze_document(doc)
-print(f"Document type: {result.document_type}")
-print(f"Key entities: {result.key_entities}")
-print(f"Monetary values: {result.monetary_values}")
-
-# Get a summary
-summary = await agent.summarize_document(doc, detail_level="standard")
-print(f"Summary: {summary.content}")
-print(f"Key points: {summary.key_points}")
+})
 ```
 
-### Analyzing Multiple Documents
+Check out the [examples](examples/) directory for more detailed examples:
 
-```python
-# Analyze multiple related documents
-docs = [doc1, doc2, doc3]
-results = await agent.analyze_documents(docs)
+- [Basic Analysis](examples/basic_analysis.py): Simple document analysis
+- [Batch Processing](examples/batch_processing.py): Process multiple documents
+- [Document Summary](examples/document_summary.py): Generate summaries
+- [Entity Search](examples/entity_search.py): Search for entities
 
-# Check relationships
-for result in results:
-    print(f"Document {result.document_type} is related to: {result.related_docs}")
-```
+## API Reference
 
-## Testing
+### Document Analysis
 
-The project includes both unit tests with mocked LLM responses and integration tests using the real Claude API.
+- `analyze_document(document)`: Analyze a single document
+- `analyze_documents(documents)`: Process multiple documents
+- `summarize_document(document, detail_level)`: Generate document summary
+- `extract_info(document, info_types)`: Extract specific information
+- `find_documents_by_entity(entity)`: Search for documents by entity
 
-Run unit tests:
-```bash
-pytest tests/test_doc_analysis_server.py -v
-```
+### Document Types
 
-Run integration tests (requires API key):
+The system supports various document types with specialized analysis:
+
+- Contracts
+- Reports
+- Invoices
+- Amendments
+- Press Releases
+- And more...
+
+## Development
+
+### Running Tests
 
 ```bash
-pytest tests/test_doc_analysis_integration.py -v
+python -m pytest tests/ -v
+
+# If using hatch
+hatch run test:test
 ```
 
-Run all tests:
+### Docker Support
+
+Build and run using Docker:
 
 ```bash
-pytest tests/ -v
+docker-compose up --build
 ```
 
-## Project Structure
+## Contributing
 
-```
-doc-analysis-agent/
-├── src/
-│   └── docanalysis/
-│       ├── server.py      # Main agent implementation
-│       └── types.py       # Type definitions
-├── tests/
-│   └── integration/
-│       └── test_doc_analysis_integration.py # Integration tests
-│   └── unit/ 
-│       └── test_doc_analysis_server.py    # Unit tests
-├── .env.example          # Example environment variables
-└── README.md             # This file
-```
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Built with [FastMCP](https://github.com/yourusername/fastmcp)
+- Powered by [Anthropic's Claude 3](https://www.anthropic.com/claude) 

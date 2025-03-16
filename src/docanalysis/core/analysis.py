@@ -98,40 +98,31 @@ Provide a detailed analysis in the following JSON structure:
         "relevant fields based on document type",
         "include all extracted information"
     }},
-    "reference_id": "ID of referenced document if any",
-    "changes_detected": {{
-        "if this is an amendment, include all changes"
-    }},
-    "confidence_score": 0.95,
-    "metadata": {{
-        "additional analysis metadata"
-    }}
+    "source_doc_id": "{metadata.get('id', '')}"
 }}
 
-Be precise and thorough in your analysis. Extract all relevant information.
 Return ONLY the JSON object, no additional text."""
 
         try:
-            response = await self._llm.generate_str(prompt)
+            # Update to use generate instead of generate_str for pydantic-based Agent
+            response = await self._llm.generate(prompt)
             result_dict = self._parse_llm_response(response)
 
-            # Add source document ID if available
-            if "id" in metadata:
+            # Add source document ID if available and not already included
+            if "source_doc_id" not in result_dict and "id" in metadata:
                 result_dict["source_doc_id"] = metadata["id"]
 
+            # Use dict unpacking to create the result
             return AnalysisResult(**result_dict)
-
         except Exception as e:
-            # Return a basic result on error
+            # Return basic analysis on error
             return AnalysisResult(
                 document_type=doc_type,
                 key_entities=[],
                 monetary_values=[],
-                dates=[metadata.get("date", "")],
+                dates=[],
                 key_info={},
-                confidence_score=0.0,
-                metadata=metadata,
-                source_doc_id=metadata.get("id"),
+                source_doc_id=metadata.get("id", ""),
             )
 
     async def analyze_documents(
@@ -139,16 +130,15 @@ Return ONLY the JSON object, no additional text."""
         documents: List[Dict[str, Any]],
         relationships: Optional[Dict[str, List[Dict[str, Any]]]] = None,
     ) -> List[AnalysisResult]:
-        """Analyze multiple documents and their relationships.
+        """Analyze multiple documents and identify relationships.
 
         Args:
-            documents: List of documents to analyze
+            documents: List of documents
             relationships: Optional pre-computed relationships
 
         Returns:
             List[AnalysisResult]: Analysis results for each document
         """
-        # Analyze each document
         results = []
         for doc in documents:
             result = await self.analyze_document(
@@ -156,21 +146,14 @@ Return ONLY the JSON object, no additional text."""
             )
             results.append(result)
 
-        # Add relationship information if provided
+        # Process relationships if provided
         if relationships:
-            for i, doc in enumerate(documents):
-                doc_id = doc.get("metadata", {}).get("id")
-                if doc_id and doc_id in relationships:
-                    doc_relationships = relationships[doc_id]
-                    related_ids = []
-
-                    # Extract IDs from relationships
-                    for rel_type, rel_docs in doc_relationships.items():
-                        for rel_doc in rel_docs:
-                            related_ids.append(rel_doc["id"])
-
-                    # Update result with relationships
-                    results[i].key_info["related_docs"] = list(set(related_ids))
+            for doc_id, related_docs in relationships.items():
+                for i, result in enumerate(results):
+                    if result.source_doc_id == doc_id or doc_id in str(
+                        result.source_doc_id
+                    ):
+                        results[i].relationships = related_docs
 
         return results
 
@@ -182,11 +165,15 @@ Return ONLY the JSON object, no additional text."""
         Args:
             content: Document content
             metadata: Document metadata
-            detail_level: Level of detail ("brief", "standard", or "detailed")
+            detail_level: Summary detail level (brief, standard, detailed)
 
         Returns:
             DocumentSummary: Generated summary
         """
+        # Validate detail level
+        if detail_level not in ["brief", "standard", "detailed"]:
+            detail_level = "standard"
+
         prompt = f"""Generate a {detail_level} summary of the following document.
 
 Document Content: {content}
@@ -211,7 +198,8 @@ Provide the summary in the following JSON structure:
 Return ONLY the JSON object, no additional text."""
 
         try:
-            response = await self._llm.generate_str(prompt)
+            # Update to use generate instead of generate_str for pydantic-based Agent
+            response = await self._llm.generate(prompt)
             result_dict = self._parse_llm_response(response)
 
             # Add source document ID if available
@@ -244,35 +232,26 @@ Return ONLY the JSON object, no additional text."""
         Returns:
             Dict[str, Any]: Extracted information by type
         """
-        prompt = f"""Extract the following types of information from the document:
-{', '.join(info_types)}
+        info_types_str = ", ".join(info_types)
+        prompt = f"""Extract the following information types from the document:
+{info_types_str}
 
 Document Content: {content}
 
-For each information type, provide structured data in the following format:
+For each information type, provide a list of relevant items.
+Return results in the following JSON structure:
 {{
-    "parties": [
-        {{"name": "party name", "role": "party role"}},
-        ...
-    ],
-    "dates": ["YYYY-MM-DD", ...],
-    "locations": ["full address or location name", ...],
-    ... (other requested types)
+    "type1": ["item1", "item2", ...],
+    "type2": ["item1", "item2", ...],
+    ...
 }}
 
-Be precise and thorough in extraction. Return ONLY the JSON object, no additional text."""
+Return ONLY the JSON object, no additional text."""
 
         try:
-            response = await self._llm.generate_str(prompt)
-            result = self._parse_llm_response(response)
-
-            # Ensure all requested types are present
-            for info_type in info_types:
-                if info_type not in result:
-                    result[info_type] = []
-
-            return result
-
+            # Update to use generate instead of generate_str for pydantic-based Agent
+            response = await self._llm.generate(prompt)
+            return self._parse_llm_response(response)
         except Exception as e:
-            # Return empty results for each type on error
+            # Return empty results on error
             return {info_type: [] for info_type in info_types}
